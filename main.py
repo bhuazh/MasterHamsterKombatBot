@@ -17,6 +17,7 @@ from promogames import *
 import sys
 from banner import show_banner
 import warna as w
+import csv
 
 try:
     from config import *
@@ -2242,8 +2243,14 @@ def RunAccounts():
 
     while True:
         print(f" {w.y}===============[ STARTING ALL ACCOUNTS ]=============== {w.rs}")
-        for account in accounts:
-            account.Start()
+        account = accounts[0]
+        with open('tokens.csv', mode='r', newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                account.account_name = row['name']
+                account.Authorization = "Bearer " + row['token']
+                print(account.account_name, account.Authorization)
+                account.Start()
 
         if AccountsRecheckTime < 1 and MaxRandomDelay < 1:
             log.error(
