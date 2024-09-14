@@ -155,13 +155,17 @@ class HamsterKombatAccount:
 
         try:
             if method == "GET":
-                response = requests.get(url, headers=defaultHeaders, proxies=self.Proxy)
+                response = requests.get(
+                    url, headers=defaultHeaders, proxies=self.Proxy, timeout=30
+                )
             elif method == "POST":
                 response = requests.post(
-                    url, headers=headers, data=payload, proxies=self.Proxy
+                    url, headers=headers, data=payload, proxies=self.Proxy, timeout=30
                 )
             elif method == "OPTIONS":
-                response = requests.options(url, headers=headers, proxies=self.Proxy)
+                response = requests.options(
+                    url, headers=headers, proxies=self.Proxy, timeout=30
+                )
             else:
                 log.error(
                     f"{w.rs}{w.g}[{self.account_name}]{w.rs}: ✖ Invalid method: {w.r}{method}"
@@ -1392,14 +1396,16 @@ class HamsterKombatAccount:
         promo_count = 0
         shuffled_promos = response["promos"][:]
         random.shuffle(shuffled_promos)
-        for promo in shuffled_promos:
 
+        for promo in shuffled_promos:
             if promo["promoId"] not in SupportedPromoGames:
                 log.warning(
                     f"{w.rs}{w.g}[{self.account_name}]{w.rs}: 🤖 {w.y}Detected unknown playground game: {w.r}{promo['title']['en']}. {w.y}Check project github for updates."
                 )
-                continue
 
+        for promo in shuffled_promos:
+            if promo["promoId"] not in SupportedPromoGames:
+                continue
             if self.CheckPlayGroundGameState(promo, response):
                 promoData = SupportedPromoGames[promo["promoId"]]
 
@@ -1514,9 +1520,12 @@ class HamsterKombatAccount:
             "Host": "api.gamepromo.io",
             "Origin": "",
             "Referer": "",
-            "Content-Type": "application/json",
+            "Content-Type": "application/json; charset=utf-8",
         }
-        if promoData.get("useNewApi"):
+        if (
+            promoData.get("useNewApi")
+            and promoData["promoId"] == "e68b39d2-4880-4a31-b3aa-0393e7df10c7"
+        ):
             headers_post["Authorization"] = "Bearer"
 
         if "userAgent" in promoData and promoData["userAgent"] != None:
